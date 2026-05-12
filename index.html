@@ -112,6 +112,10 @@ input:focus{outline:none}
 .cal-unit{font-size:14px;color:#c8889e;font-weight:500}
 .window-reminder{font-size:12px;color:#b08a8e;text-align:center;padding:6px 12px;background:#fff8f9;border-radius:8px}
 .meal-row{display:flex;gap:6px;align-items:center;overflow:hidden;margin-bottom:8px}
+.meal-types{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+.meal-type-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:12px;background:#fff8f9;border:1.5px solid #f0dde0;font-size:11px;font-weight:500;color:#8a6a6e;transition:.2s}
+.meal-type-btn.selected{background:linear-gradient(135deg,#fff0f3,#fce4ec);border-color:#e8a0b4;color:#d4839b;font-weight:600;box-shadow:0 2px 8px rgba(232,160,180,.2)}
+.meal-type-icon{font-size:22px}
 .meal-name-input{flex:1;min-width:0;padding:10px 12px;border-radius:10px;border:1.5px solid #f0dde0;font-size:13px;color:#5a3d42;background:#fff8f9}
 .meal-time-input{width:90px;padding:10px 6px;border-radius:10px;border:1.5px solid #f0dde0;font-size:13px;color:#5a3d42;background:#fff8f9;font-family:'Outfit';text-align:center;flex-shrink:0}
 .food-name-input{flex:1;min-width:0;padding:10px;border-radius:10px;border:1.5px solid #f0dde0;font-size:13px;color:#5a3d42;background:#fff8f9}
@@ -161,7 +165,7 @@ const PHASES=[
 ];
 const QUOTES=["55kg的大美女已经在路上了 🌸","今天的汗水是明天的自信 ✨","你不是在减肥，你是在雕刻一件艺术品 💎","贵族千金大小姐的蜕变日记 👑","能管住嘴的女人，全世界都会为她让路 🌷","每一次坚持都在拉开和昨天的距离 🔥","163cm的完美比例正在解锁中 💕","你的身体听得到你的决心 🌙","不是为了别人，是为了镜子里更耀眼的自己 ⭐","坚持到第三周，身体就会开始回报你 🎀","大美女从不放弃，只是偶尔休息一下 🌺","瘦下来的你会感谢现在咬牙的自己 💪"];
 
-let data,tab="today",showPhase=false,foodViewDate=null,foodItems=[];
+let data,tab="today",showPhase=false,foodViewDate=null,foodItems=[],selectedMeal="";
 const today=()=>new Date().toISOString().split("T")[0];
 const quote=QUOTES[Math.floor(Date.now()/864e5)%QUOTES.length];
 
@@ -265,8 +269,14 @@ ${Object.keys(data.weights).length?`<div class="card"><h3 class="card-title">�
 ${tab==="food"?`<div class="fade-in">
 <div class="card"><div class="food-date-nav"><button class="food-date-arrow" onclick="shiftDate(-1)">◀</button><div class="food-date-center"><span class="food-date-label">${fmtDate(afd)}</span><span class="food-date-full">${afd}</span></div><button class="food-date-arrow${ivt?" disabled":""}" onclick="shiftDate(1)">▶</button></div>${!ivt?`<button class="food-back" onclick="foodViewDate=null;render()">回到今天</button>`:""}</div>
 <div class="card"><h3 class="card-title">🍽️ ${ivt?"今日":fmtDate(afd)}摄入</h3><div class="cal-summary"><span class="cal-big">${dateCal(afd)}</span><span class="cal-unit">kcal</span></div><p class="window-reminder">进食窗口：12:00 - 18:30</p></div>
-${ivt?`<div class="card"><h3 class="card-title">✏️ 记录饮食</h3><p class="card-hint">先问Claude卡路里，然后手动输入</p>
-<div class="meal-row"><input type="text" placeholder="早餐/午餐/零食..." class="meal-name-input" id="mn"><input type="time" class="meal-time-input" id="mt" value="${new Date().toTimeString().slice(0,5)}"></div>
+${ivt?`<div class="card"><h3 class="card-title">✏️ 记录饮食</h3>
+<div class="meal-types">
+<button class="meal-type-btn${selectedMeal==="午餐"?" selected":""}" onclick="selectedMeal='午餐';render()"><span class="meal-type-icon">🍱</span>午餐</button>
+<button class="meal-type-btn${selectedMeal==="晚餐"?" selected":""}" onclick="selectedMeal='晚餐';render()"><span class="meal-type-icon">🍲</span>晚餐</button>
+<button class="meal-type-btn${selectedMeal==="饮品"?" selected":""}" onclick="selectedMeal='饮品';render()"><span class="meal-type-icon">🧋</span>饮品</button>
+<button class="meal-type-btn${selectedMeal==="零食"?" selected":""}" onclick="selectedMeal='零食';render()"><span class="meal-type-icon">🍪</span>零食</button>
+</div>
+<div class="meal-row"><input type="time" class="meal-time-input" id="mt" value="${new Date().toTimeString().slice(0,5)}" style="flex:1"></div>
 <div class="meal-row"><input type="text" placeholder="食物" class="food-name-input" id="fn"><input type="number" placeholder="卡路里" class="calorie-input" id="fc"><button class="add-btn" onclick="addFood()">+</button></div>
 ${foodItems.length?`<div class="result-box"><div class="result-header">已添加</div>${foodItems.map((f,i)=>`<div class="result-item"><span>${f.name}</span><div style="display:flex;align-items:center"><span class="result-cal">${f.calories} kcal</span><button class="remove-btn" onclick="foodItems.splice(${i},1);render()">×</button></div></div>`).join("")}<div class="result-total"><span>总计</span><span class="result-total-cal">${foodItems.reduce((s,f)=>s+f.calories,0)} kcal</span></div><button class="save-meal-btn" onclick="saveMeal()">✅ 保存这顿</button></div>`:""}</div>`:""
 }
@@ -280,7 +290,7 @@ ${(data.foods[afd]||[]).length?`<div class="card"><h3 class="card-title">📋 ${
 function toggleTask(t){if(!data.workouts[today()])data.workouts[today()]={};data.workouts[today()][t]=!data.workouts[today()][t];save();render()}
 function saveW(t){const el=document.getElementById(t==="morning"?"wm":"we");const v=parseFloat(el.value);if(isNaN(v)||v<30||v>200)return;if(!data.weights[today()])data.weights[today()]={};data.weights[today()][t]=v;save();render()}
 function addFood(){const fn=document.getElementById("fn"),fc=document.getElementById("fc");if(!fn.value||!fc.value)return;foodItems.push({name:fn.value,calories:parseInt(fc.value)});render()}
-function saveMeal(){if(!foodItems.length)return;const mn=document.getElementById("mn"),mt=document.getElementById("mt");if(!data.foods[today()])data.foods[today()]=[];data.foods[today()].push({time:mt?.value||new Date().toTimeString().slice(0,5),foods:[...foodItems],total:foodItems.reduce((s,f)=>s+f.calories,0),name:mn?.value||"一餐"});foodItems=[];save();render()}
+function saveMeal(){if(!foodItems.length)return;const mt=document.getElementById("mt");if(!data.foods[today()])data.foods[today()]=[];data.foods[today()].push({time:mt?.value||new Date().toTimeString().slice(0,5),foods:[...foodItems],total:foodItems.reduce((s,f)=>s+f.calories,0),name:selectedMeal||"一餐"});foodItems=[];selectedMeal="";save();render()}
 function shiftDate(d){const dt=new Date(foodViewDate||today());dt.setDate(dt.getDate()+d);const iso=dt.toISOString().split("T")[0];if(iso>today())return;foodViewDate=iso===today()?null:iso;render()}
 function resetAll(){if(confirm("确定要清除所有数据吗？")){data={startDate:today(),currentPhase:1,weights:{},foods:{},workouts:{}};save();render()}}
 
