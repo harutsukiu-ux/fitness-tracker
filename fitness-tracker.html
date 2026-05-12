@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="大美女计划">
+<meta name="theme-color" content="#e8a0b4">
+<title>大美女养成计划</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.12.7/Recharts.min.js"></script>
+<style>body{margin:0;padding:0;-webkit-tap-highlight-color:transparent;}</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback, Fragment } = React;
+const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } = Recharts;
+
+
+
+const DAILY_REQUIRED = {
+  title: "欧阳春晓 · 15min肩颈训练 直角肩+少女背",
+  url: "https://b23.tv/TflJ5TE",
+  tag: "每日必做 💎",
+};
+
+const PHASES = [
+  {
+    id: 1,
+    name: "唤醒期",
+    weeks: "第1-2周",
+    desc: "让身体习惯动起来",
+    stairs: "爬楼梯 × 1次/天",
+    videoTime: "20分钟入门跟练 + 15min肩颈（每日）",
+    videos: [
+      { title: "帕梅拉 · 初学者20分钟瘦全身有氧（每2-4分钟休息）", url: "https://b23.tv/uc0aHJ9" },
+      { title: "帕梅拉 · 10分钟膝盖友好臀部训练 无深蹲", url: "https://b23.tv/21r0jdW" },
+      { title: "追剧版 · 20min站立沙漏腰 无跑跳不费脖子", url: "https://b23.tv/wVrg62e" },
+      { title: "帕梅拉 · 初学者20分钟瘦全身有氧（每2-4分钟休息）", url: "https://b23.tv/uc0aHJ9" },
+      { title: "帕梅拉 · 10分钟膝盖友好臀部训练 无深蹲", url: "https://b23.tv/21r0jdW" },
+    ],
+  },
+  {
+    id: 2,
+    name: "加速期",
+    weeks: "第3-6周",
+    desc: "提升强度，开始看到变化",
+    stairs: "爬楼梯 × 2次/天",
+    videoTime: "20-30分钟中强度 + 15min肩颈（每日）",
+    videos: [
+      { title: "帕梅拉 · 初学者20分钟瘦全身有氧（每2-4分钟休息）", url: "https://b23.tv/uc0aHJ9" },
+      { title: "追剧版 · 20min站立沙漏腰 无跑跳不费脖子", url: "https://b23.tv/wVrg62e" },
+      { title: "帕梅拉 · 10分钟膝盖友好臀部训练 无深蹲", url: "https://b23.tv/21r0jdW" },
+      { title: "帕梅拉 · 初学者20分钟瘦全身有氧（每2-4分钟休息）", url: "https://b23.tv/uc0aHJ9" },
+      { title: "追剧版 · 20min站立沙漏腰 无跑跳不费脖子", url: "https://b23.tv/wVrg62e" },
+    ],
+  },
+  {
+    id: 3,
+    name: "蜕变期",
+    weeks: "第7-16周",
+    desc: "稳定输出，冲刺目标",
+    stairs: "爬楼梯 × 2次/天（快步）",
+    videoTime: "30分钟高强度 + 15min肩颈（每日）",
+    videos: [
+      { title: "帕梅拉 · 初学者20分钟瘦全身有氧（每2-4分钟休息）", url: "https://b23.tv/uc0aHJ9" },
+      { title: "追剧版 · 20min站立沙漏腰 无跑跳不费脖子", url: "https://b23.tv/wVrg62e" },
+      { title: "帕梅拉 · 10分钟膝盖友好臀部训练 无深蹲", url: "https://b23.tv/21r0jdW" },
+      { title: "帕梅拉 · 初学者20分钟瘦全身有氧（每2-4分钟休息）", url: "https://b23.tv/uc0aHJ9" },
+      { title: "追剧版 · 20min站立沙漏腰 无跑跳不费脖子", url: "https://b23.tv/wVrg62e" },
+    ],
+  },
+];
+
+const QUOTES = [
+  "55kg的大美女已经在路上了 🌸",
+  "今天的汗水是明天的自信 ✨",
+  "你不是在减肥，你是在雕刻一件艺术品 💎",
+  "贵族千金大小姐的蜕变日记 👑",
+  "能管住嘴的女人，全世界都会为她让路 🌷",
+  "每一次坚持都在拉开和昨天的距离 🔥",
+  "163cm的完美比例正在解锁中 💕",
+  "你的身体听得到你的决心 🌙",
+  "不是为了别人，是为了镜子里更耀眼的自己 ⭐",
+  "坚持到第三周，身体就会开始回报你 🎀",
+  "大美女从不放弃，只是偶尔休息一下 🌺",
+  "瘦下来的你会感谢现在咬牙的自己 💪",
+];
+
+const STORAGE_KEY = "cui-fitness-data";
+
+function FitnessTracker() {
+  const [tab, setTab] = useState("today");
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [manualFoodName, setManualFoodName] = useState("");
+  const [manualCalories, setManualCalories] = useState("");
+  const [mealName, setMealName] = useState("");
+  const [mealTime, setMealTime] = useState(() => {
+    const now = new Date();
+    return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  });
+  const [foodItems, setFoodItems] = useState([]);
+  const [weightInput, setWeightInput] = useState({ morning: "", evening: "" });
+  const [startDate, setStartDate] = useState(null);
+  const [showPhaseSelect, setShowPhaseSelect] = useState(false);
+  const [foodViewDate, setFoodViewDate] = useState(null);
+
+  const today = new Date().toISOString().split("T")[0];
+  const quote = QUOTES[Math.floor((new Date().getTime() / 86400000)) % QUOTES.length];
+
+  const defaultData = {
+    startDate: today,
+    currentPhase: 1,
+    weights: {},
+    foods: {},
+    workouts: {},
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const result = (() => { const v = localStorage.getItem(STORAGE_KEY); return v ? {value: v} : null; })();
+      if (result) {
+        setData(JSON.parse(result.value));
+      } else {
+        setData(defaultData);
+      }
+    } catch {
+      setData(defaultData);
+    }
+    setLoading(false);
+  };
+
+  const saveData = async (newData) => {
+    setData(newData);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newData));
+    } catch (e) {
+      console.error("Save failed:", e);
+    }
+  };
+
+  const getCurrentPhase = () => {
+    if (!data) return PHASES[0];
+    return PHASES.find((p) => p.id === data.currentPhase) || PHASES[0];
+  };
+
+  const getDaysSinceStart = () => {
+    if (!data) return 0;
+    const start = new Date(data.startDate);
+    const now = new Date(today);
+    return Math.floor((now - start) / 86400000);
+  };
+
+  const getWeekNumber = () => Math.floor(getDaysSinceStart() / 7) + 1;
+
+  const getTodayVideo = () => {
+    const phase = getCurrentPhase();
+    const dayIndex = getDaysSinceStart() % phase.videos.length;
+    return phase.videos[dayIndex];
+  };
+
+  const saveWeight = async (type) => {
+    const val = parseFloat(weightInput[type]);
+    if (isNaN(val) || val < 30 || val > 200) return;
+    const newData = { ...data };
+    if (!newData.weights[today]) newData.weights[today] = {};
+    newData.weights[today][type] = val;
+    await saveData(newData);
+    setWeightInput((prev) => ({ ...prev, [type]: "" }));
+  };
+
+  const getWeightChartData = () => {
+    if (!data) return [];
+    const entries = Object.entries(data.weights).sort(([a], [b]) => a.localeCompare(b));
+    return entries.map(([date, w]) => ({
+      date: date.slice(5),
+      morning: w.morning || null,
+      evening: w.evening || null,
+      avg: w.morning && w.evening ? ((w.morning + w.evening) / 2).toFixed(1) : w.morning || w.evening,
+    }));
+  };
+
+  const getLatestWeight = () => {
+    if (!data) return 63;
+    const entries = Object.entries(data.weights).sort(([a], [b]) => b.localeCompare(a));
+    if (entries.length === 0) return 63;
+    const latest = entries[0][1];
+    return latest.morning || latest.evening || 63;
+  };
+
+  const addFoodItem = () => {
+    if (!manualFoodName || !manualCalories) return;
+    setFoodItems(prev => [...prev, { name: manualFoodName, calories: parseInt(manualCalories) }]);
+    setManualFoodName("");
+    setManualCalories("");
+  };
+
+  const removeFoodItem = (index) => {
+    setFoodItems(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const saveMeal = async () => {
+    if (foodItems.length === 0) return;
+    const total = foodItems.reduce((sum, f) => sum + f.calories, 0);
+    const newData = { ...data };
+    if (!newData.foods[today]) newData.foods[today] = [];
+    newData.foods[today].push({
+      time: mealTime || new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }),
+      foods: foodItems,
+      total,
+      name: mealName || "一餐",
+    });
+    await saveData(newData);
+    setFoodItems([]);
+    setMealName("");
+    const now = new Date();
+    setMealTime(`${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`);
+  };
+
+  const toggleTask = async (task) => {
+    const newData = { ...data };
+    if (!newData.workouts[today]) newData.workouts[today] = {};
+    newData.workouts[today][task] = !newData.workouts[today][task];
+    await saveData(newData);
+  };
+
+  const getTodayTasks = () => {
+    if (!data || !data.workouts[today]) return { stairs: false, shoulder: false, video: false };
+    const w = data.workouts[today];
+    // backwards compat: old boolean format
+    if (typeof w === "boolean") return { stairs: w, shoulder: w, video: w };
+    return { stairs: !!w.stairs, shoulder: !!w.shoulder, video: !!w.video };
+  };
+
+  const getTaskCount = (dateStr) => {
+    if (!data || !data.workouts[dateStr]) return 0;
+    const w = data.workouts[dateStr];
+    if (typeof w === "boolean") return w ? 3 : 0;
+    return [w.stairs, w.shoulder, w.video].filter(Boolean).length;
+  };
+
+  const getCalendarDays = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const days = [];
+    for (let i = 0; i < firstDay; i++) days.push(null);
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      days.push({ day: d, date: dateStr, count: getTaskCount(dateStr), isToday: dateStr === today, isFuture: dateStr > today });
+    }
+    return days;
+  };
+
+  const getMonthLabel = () => {
+    const now = new Date();
+    return `${now.getFullYear()}年${now.getMonth() + 1}月`;
+  };
+
+  const setPhase = async (phaseId) => {
+    const newData = { ...data, currentPhase: phaseId };
+    await saveData(newData);
+    setShowPhaseSelect(false);
+  };
+
+  const getTodayCalories = () => {
+    if (!data || !data.foods[today]) return 0;
+    return data.foods[today].reduce((sum, f) => sum + (f.total || 0), 0);
+  };
+
+  const activeFoodDate = foodViewDate || today;
+  const isViewingToday = activeFoodDate === today;
+
+  const getDateCalories = (date) => {
+    if (!data || !data.foods[date]) return 0;
+    return data.foods[date].reduce((sum, f) => sum + (f.total || 0), 0);
+  };
+
+  const shiftFoodDate = (days) => {
+    const d = new Date(activeFoodDate);
+    d.setDate(d.getDate() + days);
+    const iso = d.toISOString().split("T")[0];
+    if (iso > today) return;
+    setFoodViewDate(iso === today ? null : iso);
+  };
+
+  const formatFoodDate = (dateStr) => {
+    if (dateStr === today) return "今天";
+    const d = new Date(dateStr);
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (dateStr === yesterday.toISOString().split("T")[0]) return "昨天";
+    return `${d.getMonth() + 1}月${d.getDate()}日`;
+  };
+
+  const getFoodDatesWithData = () => {
+    if (!data) return [];
+    return Object.keys(data.foods).filter(d => data.foods[d].length > 0).sort();
+  };
+
+  const getProgress = () => {
+    const current = getLatestWeight();
+    const lost = 63 - current;
+    const target = 63 - 55;
+    return Math.min(100, Math.max(0, (lost / target) * 100));
+  };
+
+  const resetData = async () => {
+    if (confirm("确定要清除所有数据吗？这个操作不可撤销！")) {
+      await saveData(defaultData);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={styles.loadingContainer}>
+        <div style={styles.loadingText}>加载中...</div>
+      </div>
+    );
+  }
+
+  const phase = getCurrentPhase();
+  const todayVideo = getTodayVideo();
+  const chartData = getWeightChartData();
+  const todayWeight = data.weights[today] || {};
+  const todayTasks = getTodayTasks();
+  const todayTaskCount = [todayTasks.stairs, todayTasks.shoulder, todayTasks.video].filter(Boolean).length;
+  const calendarDays = getCalendarDays();
+  const progress = getProgress();
+  const latestWeight = getLatestWeight();
+
+  return (
+    <div style={styles.container}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        input:focus { outline: none; }
+        button { cursor: pointer; border: none; background: none; }
+        button:active { transform: scale(0.97); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #e8b4b8; border-radius: 4px; }
+      `}</style>
+
+      {/* Header */}
+      <div style={styles.header}>
+        <div style={styles.headerTop}>
+          <div>
+            <h1 style={styles.title}>大美女养成计划</h1>
+            <p style={styles.subtitle}>第 {getWeekNumber()} 周 · Day {getDaysSinceStart() + 1}</p>
+          </div>
+          <div style={styles.targetBadge}>
+            <span style={styles.targetLabel}>目标</span>
+            <span style={styles.targetValue}>55kg</span>
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        <div style={styles.progressSection}>
+          <div style={styles.progressLabels}>
+            <span style={styles.progressStart}>63kg</span>
+            <span style={styles.progressCurrent}>{latestWeight}kg</span>
+            <span style={styles.progressEnd}>55kg</span>
+          </div>
+          <div style={styles.progressTrack}>
+            <div style={{ ...styles.progressFill, width: `${progress}%` }}>
+              <div style={styles.progressGlow} />
+            </div>
+          </div>
+          <p style={styles.progressText}>
+            {progress > 0 ? `已完成 ${progress.toFixed(0)}%，还差 ${(latestWeight - 55).toFixed(1)}kg` : "记录第一次体重开始你的旅程 ✨"}
+          </p>
+        </div>
+
+        {/* Quote */}
+        <div style={styles.quoteBox}>
+          <p style={styles.quoteText}>{quote}</p>
+        </div>
+      </div>
+
+      {/* Phase indicator */}
+      <div style={styles.phaseBar} onClick={() => setShowPhaseSelect(!showPhaseSelect)}>
+        <div style={styles.phaseInfo}>
+          <div style={styles.phaseDot} />
+          <span style={styles.phaseName}>{phase.name}</span>
+          <span style={styles.phaseWeeks}>{phase.weeks}</span>
+        </div>
+        <span style={styles.phaseArrow}>{showPhaseSelect ? "▲" : "▼"}</span>
+      </div>
+
+      {showPhaseSelect && (
+        <div style={styles.phaseDropdown}>
+          {PHASES.map((p) => (
+            <div
+              key={p.id}
+              style={{ ...styles.phaseOption, ...(p.id === data.currentPhase ? styles.phaseOptionActive : {}) }}
+              onClick={() => setPhase(p.id)}
+            >
+              <div style={styles.phaseOptionName}>
+                {p.name} · {p.weeks}
+              </div>
+              <div style={styles.phaseOptionDesc}>{p.desc}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Tabs */}
+      <div style={styles.tabs}>
+        {[
+          { id: "today", label: "今日计划" },
+          { id: "weight", label: "体重记录" },
+          { id: "food", label: "饮食记录" },
+        ].map((t) => (
+          <button
+            key={t.id}
+            style={{ ...styles.tab, ...(tab === t.id ? styles.tabActive : {}) }}
+            onClick={() => setTab(t.id)}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Content */}
+      <div style={styles.content}>
+        {tab === "today" && (
+          <div style={styles.fadeIn}>
+            {/* Today's status */}
+            <div style={styles.card}>
+              <h3 style={styles.cardTitle}>🏃‍♀️ 今日打卡 ({todayTaskCount}/3)</h3>
+
+              {/* Stairs */}
+              <button style={{...styles.taskCheckBtn, ...(todayTasks.stairs ? styles.taskCheckDone3 : styles.taskCheckUndone)}} onClick={() => toggleTask("stairs")}>
+                <span style={styles.taskCheckIcon}>{todayTasks.stairs ? "✅" : "⬜"}</span>
+                <span style={styles.taskCheckLabel}>{phase.stairs}</span>
+              </button>
+
+              {/* Shoulder */}
+              <button style={{...styles.taskCheckBtn, ...(todayTasks.shoulder ? styles.taskCheckDone3 : styles.taskCheckUndone)}} onClick={() => toggleTask("shoulder")}>
+                <span style={styles.taskCheckIcon}>{todayTasks.shoulder ? "✅" : "⬜"}</span>
+                <span style={styles.taskCheckLabel}>肩颈训练 15min</span>
+              </button>
+
+              {/* Video */}
+              <button style={{...styles.taskCheckBtn, ...(todayTasks.video ? styles.taskCheckDone3 : styles.taskCheckUndone)}} onClick={() => toggleTask("video")}>
+                <span style={styles.taskCheckIcon}>{todayTasks.video ? "✅" : "⬜"}</span>
+                <span style={styles.taskCheckLabel}>跟练视频</span>
+              </button>
+
+              {/* Summary banner */}
+              <div style={{
+                ...styles.taskSummary,
+                ...(todayTaskCount === 3 ? styles.taskSummary3 : todayTaskCount === 2 ? styles.taskSummary2 : todayTaskCount === 1 ? styles.taskSummary1 : styles.taskSummary0)
+              }}>
+                {todayTaskCount === 3 ? "⭐ 今天全部完成了！大美女太棒了！" :
+                 todayTaskCount === 2 ? "💪 完成了2/3，再加把劲！" :
+                 todayTaskCount === 1 ? "🌱 迈出了第一步，继续加油～" :
+                 "还没开始今天的运动哦～"}
+              </div>
+            </div>
+
+            {/* Mini calendar */}
+            <div style={styles.card}>
+              <h3 style={styles.cardTitle}>📅 {getMonthLabel()} 运动日历</h3>
+              <div style={styles.calendarWeekHeader}>
+                {["日", "一", "二", "三", "四", "五", "六"].map((d) => (
+                  <span key={d} style={styles.calendarWeekDay}>{d}</span>
+                ))}
+              </div>
+              <div style={styles.calendarGrid}>
+                {calendarDays.map((d, i) => (
+                  <div key={i} style={{
+                    ...styles.calendarCell,
+                    ...(d?.isToday ? styles.calendarToday : {}),
+                    ...(d?.isFuture ? styles.calendarFuture : {}),
+                  }}>
+                    {d && (
+                      <>
+                        <span style={styles.calendarDay}>{d.day}</span>
+                        {!d.isFuture && d.count > 0 && (
+                          <span style={{
+                            ...styles.calendarBadge,
+                            ...(d.count === 3 ? styles.calBadge3 : d.count === 2 ? styles.calBadge2 : styles.calBadge1),
+                          }}>
+                            {d.count === 3 ? "⭐" : d.count === 2 ? "🔥" : "·"}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div style={styles.calendarLegend}>
+                <span style={styles.legendItem}><span style={{...styles.legendDot, background: "linear-gradient(135deg, #FFD700, #FFA500)"}}/> 3/3 全勤</span>
+                <span style={styles.legendItem}><span style={{...styles.legendDot, background: "linear-gradient(135deg, #f7c5cc, #e8a0b4)"}}/> 2/3 不错</span>
+                <span style={styles.legendItem}><span style={{...styles.legendDot, background: "#e0d0d3"}}/> 1/3 加油</span>
+              </div>
+            </div>
+
+            {/* Daily required exercise */}
+            <div style={styles.card}>
+              <div style={styles.dailyRequiredBadge}>💎 每日必做</div>
+              <h3 style={{...styles.cardTitle, marginTop: 8}}>✨ 肩颈训练 · 直角肩+少女背</h3>
+              <a href={DAILY_REQUIRED.url} target="_blank" rel="noopener noreferrer" style={styles.videoLink}>
+                <div style={{...styles.videoCard, background: "linear-gradient(135deg, #f0e6ff, #e8d5f5)", border: "1px solid #d4b8e8"}}>
+                  <div style={{...styles.videoPlayIcon, background: "linear-gradient(135deg, #c4a0d8, #a87bc5)"}}>▶</div>
+                  <div style={styles.videoInfo}>
+                    <p style={styles.videoTitle}>{DAILY_REQUIRED.title}</p>
+                    <p style={styles.videoHint}>每天都要做！打造迷人肩颈线条 →</p>
+                  </div>
+                </div>
+              </a>
+            </div>
+
+            {/* Today's video */}
+            <div style={styles.card}>
+              <h3 style={styles.cardTitle}>📺 今日跟练视频</h3>
+              <a href={todayVideo.url} target="_blank" rel="noopener noreferrer" style={styles.videoLink}>
+                <div style={styles.videoCard}>
+                  <div style={styles.videoPlayIcon}>▶</div>
+                  <div style={styles.videoInfo}>
+                    <p style={styles.videoTitle}>{todayVideo.title}</p>
+                    <p style={styles.videoHint}>点击跳转B站跟练 →</p>
+                  </div>
+                </div>
+              </a>
+
+              <div style={styles.moreVideos}>
+                <p style={styles.moreTitle}>更多推荐：</p>
+                {phase.videos
+                  .filter((v, i, arr) => arr.findIndex(x => x.url === v.url) === i && v.url !== todayVideo.url)
+                  .map((v, i) => (
+                    <a key={i} href={v.url} target="_blank" rel="noopener noreferrer" style={styles.moreVideoLink}>
+                      {v.title}
+                    </a>
+                  ))}
+              </div>
+            </div>
+
+            {/* Phase details */}
+            <div style={styles.card}>
+              <h3 style={styles.cardTitle}>📋 当前阶段说明</h3>
+              <div style={styles.phaseDetail}>
+                <div style={styles.phaseDetailHeader}>
+                  <span style={styles.phaseDetailName}>{phase.name}</span>
+                  <span style={styles.phaseDetailWeeks}>{phase.weeks}</span>
+                </div>
+                <p style={styles.phaseDetailDesc}>{phase.desc}</p>
+                <div style={styles.phaseRules}>
+                  <p>🔹 {phase.stairs}</p>
+                  <p>🔹 {phase.videoTime}</p>
+                  <p>🔹 进食窗口 12:00 - 18:30</p>
+                  <p>🔹 奶茶每周 ≤ 2杯</p>
+                  <p>🔹 姨妈期间可以休息，不要勉强自己 💕</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab === "weight" && (
+          <div style={styles.fadeIn}>
+            {/* Weight input */}
+            <div style={styles.card}>
+              <h3 style={styles.cardTitle}>⚖️ 今日体重</h3>
+              <div style={styles.weightInputsVertical}>
+                <div style={styles.weightRow}>
+                  <span style={styles.weightRowLabel}>🌅 早上</span>
+                  {todayWeight.morning ? (
+                    <span style={styles.weightRowRecorded}>{todayWeight.morning} kg ✓</span>
+                  ) : (
+                    <div style={styles.weightRowInput}>
+                      <input
+                        type="number"
+                        step="0.1"
+                        placeholder="0.0"
+                        value={weightInput.morning}
+                        onChange={(e) => setWeightInput((p) => ({ ...p, morning: e.target.value }))}
+                        style={styles.weightFieldCompact}
+                      />
+                      <span style={styles.weightUnit}>kg</span>
+                      <button style={styles.weightSaveBtnCompact} onClick={() => saveWeight("morning")}>记录</button>
+                    </div>
+                  )}
+                </div>
+                <div style={styles.weightDivider} />
+                <div style={styles.weightRow}>
+                  <span style={styles.weightRowLabel}>🌙 晚上</span>
+                  {todayWeight.evening ? (
+                    <span style={styles.weightRowRecorded}>{todayWeight.evening} kg ✓</span>
+                  ) : (
+                    <div style={styles.weightRowInput}>
+                      <input
+                        type="number"
+                        step="0.1"
+                        placeholder="0.0"
+                        value={weightInput.evening}
+                        onChange={(e) => setWeightInput((p) => ({ ...p, evening: e.target.value }))}
+                        style={styles.weightFieldCompact}
+                      />
+                      <span style={styles.weightUnit}>kg</span>
+                      <button style={styles.weightSaveBtnCompact} onClick={() => saveWeight("evening")}>记录</button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Weight chart */}
+            <div style={styles.card}>
+              <h3 style={styles.cardTitle}>📈 体重趋势</h3>
+              {chartData.length > 0 ? (
+                <div style={styles.chartContainer}>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <LineChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0e0e3" />
+                      <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#b08a8e" }} />
+                      <YAxis domain={[54, 64]} tick={{ fontSize: 11, fill: "#b08a8e" }} />
+                      <Tooltip
+                        contentStyle={{ background: "#fff5f5", border: "1px solid #e8b4b8", borderRadius: 12, fontSize: 13 }}
+                      />
+                      <ReferenceLine y={55} stroke="#e87f8f" strokeDasharray="5 5" label={{ value: "目标 55kg", position: "right", fill: "#e87f8f", fontSize: 11 }} />
+                      <Line type="monotone" dataKey="morning" stroke="#f4a0ab" strokeWidth={2} dot={{ fill: "#f4a0ab", r: 4 }} name="早上" connectNulls />
+                      <Line type="monotone" dataKey="evening" stroke="#c8889e" strokeWidth={2} dot={{ fill: "#c8889e", r: 4 }} name="晚上" connectNulls />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <p style={styles.emptyText}>还没有体重记录，记录第一个数据点吧 ✨</p>
+              )}
+            </div>
+
+            {/* Weight history */}
+            {chartData.length > 0 && (
+              <div style={styles.card}>
+                <h3 style={styles.cardTitle}>📝 记录明细</h3>
+                <div style={styles.historyList}>
+                  {[...Object.entries(data.weights)].sort(([a], [b]) => b.localeCompare(a)).slice(0, 14).map(([date, w]) => (
+                    <div key={date} style={styles.historyItem}>
+                      <span style={styles.historyDate}>{date.slice(5)}</span>
+                      <span style={styles.historyValues}>
+                        {w.morning ? `早 ${w.morning}` : "—"} / {w.evening ? `晚 ${w.evening}` : "—"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {tab === "food" && (
+          <div style={styles.fadeIn}>
+            {/* Date navigation */}
+            <div style={styles.card}>
+              <div style={styles.foodDateNav}>
+                <button style={styles.foodDateArrow} onClick={() => shiftFoodDate(-1)}>◀</button>
+                <div style={styles.foodDateCenter}>
+                  <span style={styles.foodDateLabel}>{formatFoodDate(activeFoodDate)}</span>
+                  <span style={styles.foodDateFull}>{activeFoodDate}</span>
+                </div>
+                <button
+                  style={{...styles.foodDateArrow, ...(isViewingToday ? {opacity: 0.3} : {})}}
+                  onClick={() => shiftFoodDate(1)}
+                  disabled={isViewingToday}
+                >▶</button>
+              </div>
+              {!isViewingToday && (
+                <button style={styles.foodBackToday} onClick={() => setFoodViewDate(null)}>
+                  回到今天
+                </button>
+              )}
+            </div>
+
+            {/* Calories summary */}
+            <div style={styles.card}>
+              <h3 style={styles.cardTitle}>🍽️ {isViewingToday ? "今日" : formatFoodDate(activeFoodDate)}摄入</h3>
+              <div style={styles.caloriesSummary}>
+                <span style={styles.caloriesBig}>{getDateCalories(activeFoodDate)}</span>
+                <span style={styles.caloriesUnit}>kcal</span>
+              </div>
+              <p style={styles.windowReminder}>进食窗口：12:00 - 18:30</p>
+            </div>
+
+            {/* Photo upload - only show for today */}
+            {isViewingToday && (
+            <div style={styles.card}>
+              <h3 style={styles.cardTitle}>✏️ 记录饮食</h3>
+              <p style={styles.cardHint}>先问Claude卡路里，然后手动输入</p>
+
+              <div style={styles.mealMetaRow}>
+                <input
+                  type="text"
+                  placeholder="早餐/午餐/零食..."
+                  value={mealName}
+                  onChange={(e) => setMealName(e.target.value)}
+                  style={styles.mealNameInputCompact}
+                />
+                <input
+                  type="time"
+                  value={mealTime}
+                  onChange={(e) => setMealTime(e.target.value)}
+                  style={styles.mealTimeInput}
+                />
+              </div>
+
+              <div style={{...styles.mealMetaRow, marginTop: 8}}>
+                <input
+                  type="text"
+                  placeholder="食物"
+                  value={manualFoodName}
+                  onChange={(e) => setManualFoodName(e.target.value)}
+                  style={styles.foodNameInput}
+                />
+                <input
+                  type="number"
+                  placeholder="卡路里"
+                  value={manualCalories}
+                  onChange={(e) => setManualCalories(e.target.value)}
+                  style={styles.calorieInput}
+                />
+                <button style={styles.addFoodBtn} onClick={addFoodItem}>+</button>
+              </div>
+
+              {foodItems.length > 0 && (
+                <div style={styles.resultBox}>
+                  <div style={styles.resultHeader}>已添加</div>
+                  {foodItems.map((f, i) => (
+                    <div key={i} style={styles.resultItem}>
+                      <span>{f.name}</span>
+                      <div style={{display: "flex", alignItems: "center", gap: 8}}>
+                        <span style={styles.resultCal}>{f.calories} kcal</span>
+                        <button style={styles.removeFoodBtn} onClick={() => removeFoodItem(i)}>×</button>
+                      </div>
+                    </div>
+                  ))}
+                  <div style={styles.resultTotal}>
+                    <span>总计</span>
+                    <span style={styles.resultTotalCal}>{foodItems.reduce((s, f) => s + f.calories, 0)} kcal</span>
+                  </div>
+                  <button style={styles.saveMealBtn} onClick={saveMeal}>
+                    ✅ 保存这顿
+                  </button>
+                </div>
+              )}
+            </div>
+            )}
+
+            {/* Food log for selected date */}
+            {data.foods[activeFoodDate] && data.foods[activeFoodDate].length > 0 && (
+              <div style={styles.card}>
+                <h3 style={styles.cardTitle}>📋 {isViewingToday ? "今日" : formatFoodDate(activeFoodDate)}饮食时间线</h3>
+                {data.foods[activeFoodDate].map((entry, i) => (
+                  <div key={i} style={styles.foodEntry}>
+                    <div style={styles.foodTimeline}>
+                      <div style={styles.foodTimeBlock}>
+                        <span style={styles.foodTimeBig}>{entry.time}</span>
+                      </div>
+                      <div style={styles.foodTimelineLine} />
+                      <div style={styles.foodTimeContent}>
+                        <span style={styles.foodEntryName}>{entry.name}</span>
+                        {entry.foods?.map((f, j) => (
+                          <div key={j} style={styles.foodEntryItem}>
+                            <span>{f.name}</span>
+                            <span style={styles.foodEntryCal}>{f.calories} kcal</span>
+                          </div>
+                        ))}
+                        <div style={styles.foodEntryTotal}>小计：{entry.total} kcal</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {(!data.foods[activeFoodDate] || data.foods[activeFoodDate].length === 0) && (
+              <div style={styles.card}>
+                <p style={styles.emptyText}>
+                  {isViewingToday ? "还没有记录，吃饭的时候拍一张吧 📸" : `${formatFoodDate(activeFoodDate)}没有饮食记录`}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div style={styles.footer}>
+        <button style={styles.resetBtn} onClick={resetData}>
+          重置所有数据
+        </button>
+      </div>
+    </div>
+  );
+}
+
+const styles = {
+  container: {
+    fontFamily: "'Noto Sans SC', 'Outfit', sans-serif",
+    background: "linear-gradient(165deg, #fff9f9 0%, #fff0f3 30%, #fce4ec 100%)",
+    minHeight: "100vh",
+    color: "#5a3d42",
+    maxWidth: 480,
+    margin: "0 auto",
+    paddingBottom: 40,
+  },
+  loadingContainer: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    height: "100vh",
+    background: "#fff0f3",
+  },
+  loadingText: {
+    fontSize: 16,
+    color: "#c8889e",
+  },
+  header: {
+    background: "linear-gradient(135deg, #f7c5cc 0%, #e8a0b4 50%, #d4839b 100%)",
+    padding: "32px 20px 24px",
+    borderRadius: "0 0 28px 28px",
+    boxShadow: "0 8px 32px rgba(212, 131, 155, 0.25)",
+  },
+  headerTop: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 700,
+    color: "#fff",
+    letterSpacing: 1,
+    textShadow: "0 2px 8px rgba(150, 60, 80, 0.2)",
+  },
+  subtitle: {
+    fontSize: 13,
+    color: "rgba(255,255,255,0.85)",
+    marginTop: 4,
+    fontWeight: 400,
+  },
+  targetBadge: {
+    background: "rgba(255,255,255,0.25)",
+    backdropFilter: "blur(10px)",
+    borderRadius: 16,
+    padding: "8px 16px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+  targetLabel: {
+    fontSize: 10,
+    color: "rgba(255,255,255,0.8)",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  targetValue: {
+    fontSize: 20,
+    fontWeight: 700,
+    color: "#fff",
+  },
+  progressSection: {
+    marginBottom: 16,
+  },
+  progressLabels: {
+    display: "flex",
+    justifyContent: "space-between",
+    fontSize: 11,
+    color: "rgba(255,255,255,0.75)",
+    marginBottom: 6,
+  },
+  progressStart: {},
+  progressCurrent: { fontWeight: 700, color: "#fff", fontSize: 13 },
+  progressEnd: {},
+  progressTrack: {
+    background: "rgba(255,255,255,0.25)",
+    borderRadius: 10,
+    height: 10,
+    overflow: "hidden",
+  },
+  progressFill: {
+    background: "linear-gradient(90deg, #fff, #ffe0e6)",
+    height: "100%",
+    borderRadius: 10,
+    transition: "width 0.8s ease",
+    position: "relative",
+    minWidth: 4,
+  },
+  progressGlow: {
+    position: "absolute",
+    right: 0,
+    top: -2,
+    width: 14,
+    height: 14,
+    borderRadius: "50%",
+    background: "#fff",
+    boxShadow: "0 0 12px rgba(255,255,255,0.8)",
+  },
+  progressText: {
+    fontSize: 12,
+    color: "rgba(255,255,255,0.85)",
+    marginTop: 8,
+    textAlign: "center",
+  },
+  quoteBox: {
+    background: "rgba(255,255,255,0.2)",
+    borderRadius: 14,
+    padding: "10px 16px",
+    marginTop: 4,
+  },
+  quoteText: {
+    fontSize: 13,
+    color: "#fff",
+    textAlign: "center",
+    fontWeight: 500,
+    lineHeight: 1.5,
+  },
+  phaseBar: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    margin: "16px 16px 0",
+    padding: "12px 16px",
+    background: "#fff",
+    borderRadius: 14,
+    boxShadow: "0 2px 12px rgba(200, 136, 158, 0.1)",
+    cursor: "pointer",
+  },
+  phaseInfo: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+  },
+  phaseDot: {
+    width: 8,
+    height: 8,
+    borderRadius: "50%",
+    background: "linear-gradient(135deg, #f4a0ab, #d4839b)",
+  },
+  phaseName: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: "#5a3d42",
+  },
+  phaseWeeks: {
+    fontSize: 12,
+    color: "#b08a8e",
+  },
+  phaseArrow: {
+    fontSize: 10,
+    color: "#c8889e",
+  },
+  phaseDropdown: {
+    margin: "4px 16px 0",
+    background: "#fff",
+    borderRadius: 14,
+    overflow: "hidden",
+    boxShadow: "0 4px 20px rgba(200, 136, 158, 0.15)",
+  },
+  phaseOption: {
+    padding: "12px 16px",
+    cursor: "pointer",
+    borderBottom: "1px solid #fce4ec",
+    transition: "background 0.2s",
+  },
+  phaseOptionActive: {
+    background: "#fff5f7",
+  },
+  phaseOptionName: {
+    fontSize: 13,
+    fontWeight: 600,
+    color: "#5a3d42",
+  },
+  phaseOptionDesc: {
+    fontSize: 11,
+    color: "#b08a8e",
+    marginTop: 2,
+  },
+  tabs: {
+    display: "flex",
+    gap: 4,
+    margin: "16px 16px 0",
+    background: "#fff",
+    borderRadius: 14,
+    padding: 4,
+    boxShadow: "0 2px 12px rgba(200, 136, 158, 0.08)",
+  },
+  tab: {
+    flex: 1,
+    padding: "10px 0",
+    borderRadius: 11,
+    fontSize: 13,
+    fontWeight: 500,
+    color: "#b08a8e",
+    transition: "all 0.3s",
+    fontFamily: "'Noto Sans SC', sans-serif",
+  },
+  tabActive: {
+    background: "linear-gradient(135deg, #f7c5cc, #e8a0b4)",
+    color: "#fff",
+    fontWeight: 600,
+    boxShadow: "0 2px 10px rgba(232, 160, 180, 0.3)",
+  },
+  content: {
+    padding: "12px 16px 0",
+  },
+  fadeIn: {
+    animation: "fadeIn 0.3s ease",
+  },
+  card: {
+    background: "#fff",
+    borderRadius: 18,
+    padding: "18px 16px",
+    marginBottom: 12,
+    boxShadow: "0 2px 16px rgba(200, 136, 158, 0.08)",
+  },
+  cardTitle: {
+    fontSize: 15,
+    fontWeight: 600,
+    marginBottom: 12,
+    color: "#5a3d42",
+  },
+  dailyRequiredBadge: {
+    display: "inline-block",
+    padding: "3px 10px",
+    borderRadius: 20,
+    background: "linear-gradient(135deg, #d4b8e8, #c4a0d8)",
+    color: "#fff",
+    fontSize: 11,
+    fontWeight: 600,
+    letterSpacing: 0.5,
+  },
+  cardHint: {
+    fontSize: 12,
+    color: "#b08a8e",
+    marginBottom: 12,
+  },
+  taskCheckBtn: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    width: "100%",
+    padding: "12px 14px",
+    borderRadius: 12,
+    marginBottom: 8,
+    transition: "all 0.2s",
+    fontFamily: "'Noto Sans SC', sans-serif",
+    textAlign: "left",
+  },
+  taskCheckUndone: {
+    background: "#fff8f9",
+    border: "1.5px solid #f0dde0",
+  },
+  taskCheckDone3: {
+    background: "linear-gradient(135deg, #f0faf4, #e8f5e9)",
+    border: "1.5px solid #c8e6d4",
+  },
+  taskCheckIcon: {
+    fontSize: 18,
+    flexShrink: 0,
+  },
+  taskCheckLabel: {
+    fontSize: 13,
+    fontWeight: 500,
+    color: "#5a3d42",
+  },
+  taskSummary: {
+    marginTop: 6,
+    padding: "10px 14px",
+    borderRadius: 12,
+    fontSize: 13,
+    fontWeight: 600,
+    textAlign: "center",
+  },
+  taskSummary3: {
+    background: "linear-gradient(135deg, #FFF8E1, #FFECB3)",
+    color: "#F57F17",
+    border: "1px solid #FFE082",
+  },
+  taskSummary2: {
+    background: "linear-gradient(135deg, #fff0f3, #fce4ec)",
+    color: "#d4839b",
+    border: "1px solid #f7c5cc",
+  },
+  taskSummary1: {
+    background: "#f5f0f1",
+    color: "#a08a8e",
+    border: "1px solid #e8dce0",
+  },
+  taskSummary0: {
+    background: "#f8f5f6",
+    color: "#c0b0b4",
+    border: "1px solid #ede5e8",
+  },
+  calendarWeekHeader: {
+    display: "grid",
+    gridTemplateColumns: "repeat(7, 1fr)",
+    gap: 2,
+    marginBottom: 4,
+  },
+  calendarWeekDay: {
+    textAlign: "center",
+    fontSize: 11,
+    color: "#b08a8e",
+    fontWeight: 500,
+    padding: "4px 0",
+  },
+  calendarGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(7, 1fr)",
+    gap: 2,
+  },
+  calendarCell: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "6px 0",
+    minHeight: 42,
+    borderRadius: 8,
+  },
+  calendarToday: {
+    background: "#fff0f3",
+    border: "1.5px solid #f7c5cc",
+  },
+  calendarFuture: {
+    opacity: 0.35,
+  },
+  calendarDay: {
+    fontSize: 12,
+    fontWeight: 500,
+    color: "#5a3d42",
+    fontFamily: "'Outfit', sans-serif",
+  },
+  calendarBadge: {
+    fontSize: 10,
+    marginTop: 1,
+    lineHeight: 1,
+  },
+  calBadge3: {},
+  calBadge2: {},
+  calBadge1: {
+    color: "#c0b0b4",
+    fontSize: 16,
+    lineHeight: "10px",
+  },
+  calendarLegend: {
+    display: "flex",
+    justifyContent: "center",
+    gap: 14,
+    marginTop: 12,
+    paddingTop: 10,
+    borderTop: "1px solid #fce4ec",
+  },
+  legendItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: 4,
+    fontSize: 11,
+    color: "#8a6a6e",
+  },
+  legendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: "50%",
+    display: "inline-block",
+  },
+  videoLink: {
+    textDecoration: "none",
+  },
+  videoCard: {
+    display: "flex",
+    alignItems: "center",
+    gap: 14,
+    padding: "14px",
+    background: "linear-gradient(135deg, #fff5f7, #fce4ec)",
+    borderRadius: 14,
+    border: "1px solid #f7c5cc",
+    marginBottom: 14,
+    transition: "transform 0.2s",
+  },
+  videoPlayIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    background: "linear-gradient(135deg, #e8a0b4, #d4839b)",
+    color: "#fff",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 18,
+    flexShrink: 0,
+    boxShadow: "0 4px 12px rgba(212, 131, 155, 0.3)",
+  },
+  videoInfo: { flex: 1 },
+  videoTitle: {
+    fontSize: 13,
+    fontWeight: 600,
+    color: "#5a3d42",
+    lineHeight: 1.4,
+  },
+  videoHint: {
+    fontSize: 11,
+    color: "#c8889e",
+    marginTop: 4,
+  },
+  moreVideos: {
+    paddingTop: 4,
+  },
+  moreTitle: {
+    fontSize: 12,
+    color: "#b08a8e",
+    marginBottom: 8,
+  },
+  moreVideoLink: {
+    display: "block",
+    fontSize: 12,
+    color: "#d4839b",
+    textDecoration: "none",
+    padding: "6px 0",
+    borderBottom: "1px solid #fce4ec",
+    lineHeight: 1.5,
+  },
+  phaseDetail: {
+    background: "#fff8f9",
+    borderRadius: 14,
+    padding: 14,
+    border: "1px solid #fce4ec",
+  },
+  phaseDetailHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 6,
+  },
+  phaseDetailName: {
+    fontSize: 15,
+    fontWeight: 700,
+    color: "#d4839b",
+  },
+  phaseDetailWeeks: {
+    fontSize: 12,
+    color: "#b08a8e",
+  },
+  phaseDetailDesc: {
+    fontSize: 12,
+    color: "#8a6a6e",
+    marginBottom: 10,
+  },
+  phaseRules: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 6,
+    fontSize: 13,
+    color: "#5a3d42",
+    lineHeight: 1.6,
+  },
+  weightInputsVertical: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 0,
+  },
+  weightRow: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "10px 0",
+  },
+  weightRowLabel: {
+    fontSize: 14,
+    fontWeight: 500,
+    color: "#8a6a6e",
+    minWidth: 60,
+  },
+  weightRowInput: {
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+  },
+  weightFieldCompact: {
+    width: 72,
+    padding: "8px 10px",
+    borderRadius: 10,
+    border: "1.5px solid #f0dde0",
+    fontSize: 16,
+    fontWeight: 600,
+    color: "#5a3d42",
+    background: "#fff8f9",
+    fontFamily: "'Outfit', sans-serif",
+    textAlign: "center",
+  },
+  weightUnit: {
+    fontSize: 13,
+    color: "#b08a8e",
+    fontWeight: 500,
+  },
+  weightSaveBtnCompact: {
+    padding: "8px 14px",
+    borderRadius: 10,
+    background: "linear-gradient(135deg, #f7c5cc, #e8a0b4)",
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: 600,
+    fontFamily: "'Noto Sans SC', sans-serif",
+    boxShadow: "0 2px 8px rgba(232, 160, 180, 0.25)",
+  },
+  weightRowRecorded: {
+    padding: "8px 14px",
+    background: "#f0faf4",
+    borderRadius: 10,
+    fontSize: 14,
+    fontWeight: 600,
+    color: "#5aa87a",
+    border: "1.5px solid #c8e6d4",
+  },
+  weightDivider: {
+    height: 1,
+    background: "#fce4ec",
+  },
+  chartContainer: {
+    marginTop: 8,
+    marginLeft: -8,
+  },
+  emptyText: {
+    fontSize: 13,
+    color: "#c8889e",
+    textAlign: "center",
+    padding: "24px 0",
+  },
+  historyList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
+  },
+  historyItem: {
+    display: "flex",
+    justifyContent: "space-between",
+    padding: "8px 10px",
+    fontSize: 13,
+    borderBottom: "1px solid #fce4ec",
+  },
+  historyDate: {
+    color: "#b08a8e",
+    fontWeight: 500,
+  },
+  historyValues: {
+    color: "#5a3d42",
+    fontWeight: 500,
+  },
+  caloriesSummary: {
+    display: "flex",
+    alignItems: "baseline",
+    justifyContent: "center",
+    gap: 4,
+    padding: "12px 0",
+  },
+  caloriesBig: {
+    fontSize: 42,
+    fontWeight: 700,
+    fontFamily: "'Outfit', sans-serif",
+    color: "#d4839b",
+    lineHeight: 1,
+  },
+  caloriesUnit: {
+    fontSize: 14,
+    color: "#c8889e",
+    fontWeight: 500,
+  },
+  windowReminder: {
+    fontSize: 12,
+    color: "#b08a8e",
+    textAlign: "center",
+    padding: "6px 12px",
+    background: "#fff8f9",
+    borderRadius: 8,
+  },
+  foodDateNav: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  foodDateArrow: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    background: "#fff5f7",
+    border: "1px solid #fce4ec",
+    color: "#d4839b",
+    fontSize: 14,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontFamily: "inherit",
+  },
+  foodDateCenter: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+  foodDateLabel: {
+    fontSize: 16,
+    fontWeight: 700,
+    color: "#5a3d42",
+  },
+  foodDateFull: {
+    fontSize: 11,
+    color: "#b08a8e",
+    marginTop: 2,
+    fontFamily: "'Outfit', sans-serif",
+  },
+  foodBackToday: {
+    display: "block",
+    width: "100%",
+    marginTop: 10,
+    padding: "8px",
+    borderRadius: 10,
+    background: "linear-gradient(135deg, #f7c5cc, #e8a0b4)",
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: 600,
+    textAlign: "center",
+    fontFamily: "'Noto Sans SC', sans-serif",
+  },
+  uploadBtn: {
+    display: "block",
+    width: "100%",
+    padding: "14px",
+    borderRadius: 12,
+    background: "linear-gradient(135deg, #fff5f7, #fce4ec)",
+    border: "2px dashed #e8b4b8",
+    color: "#c8889e",
+    fontSize: 14,
+    fontWeight: 500,
+    textAlign: "center",
+    cursor: "pointer",
+    transition: "all 0.2s",
+    fontFamily: "'Noto Sans SC', sans-serif",
+  },
+  previewSection: {
+    marginTop: 12,
+    display: "flex",
+    flexDirection: "column",
+    gap: 10,
+  },
+  previewImg: {
+    width: "100%",
+    borderRadius: 14,
+    maxHeight: 200,
+    objectFit: "cover",
+  },
+  mealNameInput: {
+    padding: "10px 12px",
+    borderRadius: 10,
+    border: "1.5px solid #f0dde0",
+    fontSize: 13,
+    color: "#5a3d42",
+    background: "#fff8f9",
+    fontFamily: "'Noto Sans SC', sans-serif",
+  },
+  mealMetaRow: {
+    display: "flex",
+    gap: 6,
+    alignItems: "center",
+    overflow: "hidden",
+  },
+  mealNameInputCompact: {
+    flex: 1,
+    minWidth: 0,
+    padding: "10px 12px",
+    borderRadius: 10,
+    border: "1.5px solid #f0dde0",
+    fontSize: 13,
+    color: "#5a3d42",
+    background: "#fff8f9",
+    fontFamily: "'Noto Sans SC', sans-serif",
+  },
+  foodNameInput: {
+    flex: 1,
+    minWidth: 0,
+    padding: "10px 10px",
+    borderRadius: 10,
+    border: "1.5px solid #f0dde0",
+    fontSize: 13,
+    color: "#5a3d42",
+    background: "#fff8f9",
+    fontFamily: "'Noto Sans SC', sans-serif",
+  },
+  mealTimeInput: {
+    width: 90,
+    padding: "10px 6px",
+    borderRadius: 10,
+    border: "1.5px solid #f0dde0",
+    fontSize: 13,
+    color: "#5a3d42",
+    background: "#fff8f9",
+    fontFamily: "'Outfit', sans-serif",
+    textAlign: "center",
+    flexShrink: 0,
+  },
+  calorieInput: {
+    width: 68,
+    padding: "10px 6px",
+    borderRadius: 10,
+    border: "1.5px solid #f0dde0",
+    fontSize: 13,
+    color: "#5a3d42",
+    background: "#fff8f9",
+    fontFamily: "'Outfit', sans-serif",
+    textAlign: "center",
+    flexShrink: 0,
+  },
+  addFoodBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    background: "linear-gradient(135deg, #f7c5cc, #e8a0b4)",
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: 600,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+    boxShadow: "0 2px 8px rgba(232, 160, 180, 0.25)",
+    fontFamily: "inherit",
+  },
+  removeFoodBtn: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    background: "#f0dde0",
+    color: "#b08a8e",
+    fontSize: 14,
+    fontWeight: 600,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontFamily: "inherit",
+  },
+  saveMealBtn: {
+    width: "100%",
+    marginTop: 10,
+    padding: "10px",
+    borderRadius: 10,
+    background: "linear-gradient(135deg, #a8e6cf, #88d8b0)",
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: 600,
+    fontFamily: "'Noto Sans SC', sans-serif",
+    boxShadow: "0 2px 10px rgba(136, 216, 176, 0.3)",
+  },
+  analyzeBtn: {
+    padding: "12px",
+    borderRadius: 12,
+    background: "linear-gradient(135deg, #f7c5cc, #e8a0b4)",
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: 600,
+    fontFamily: "'Noto Sans SC', sans-serif",
+    boxShadow: "0 4px 15px rgba(232, 160, 180, 0.3)",
+  },
+  resultBox: {
+    marginTop: 12,
+    padding: 14,
+    background: "#fff8f9",
+    borderRadius: 14,
+    border: "1px solid #fce4ec",
+  },
+  resultHeader: {
+    fontSize: 13,
+    fontWeight: 600,
+    color: "#d4839b",
+    marginBottom: 8,
+  },
+  resultItem: {
+    display: "flex",
+    justifyContent: "space-between",
+    padding: "6px 0",
+    fontSize: 13,
+    borderBottom: "1px solid #fce4ec",
+  },
+  resultCal: {
+    fontWeight: 600,
+    color: "#c8889e",
+    fontFamily: "'Outfit', sans-serif",
+  },
+  resultTotal: {
+    display: "flex",
+    justifyContent: "space-between",
+    paddingTop: 8,
+    fontSize: 14,
+    fontWeight: 700,
+  },
+  resultTotalCal: {
+    color: "#d4839b",
+    fontFamily: "'Outfit', sans-serif",
+  },
+  errorBox: {
+    marginTop: 12,
+    padding: 12,
+    background: "#fff0f0",
+    borderRadius: 12,
+    fontSize: 13,
+    color: "#c87070",
+    textAlign: "center",
+  },
+  foodEntry: {
+    marginBottom: 8,
+  },
+  foodTimeline: {
+    display: "flex",
+    gap: 12,
+    alignItems: "flex-start",
+  },
+  foodTimeBlock: {
+    minWidth: 50,
+    textAlign: "center",
+    paddingTop: 2,
+  },
+  foodTimeBig: {
+    fontSize: 14,
+    fontWeight: 700,
+    color: "#d4839b",
+    fontFamily: "'Outfit', sans-serif",
+  },
+  foodTimelineLine: {
+    width: 2,
+    minHeight: 40,
+    background: "linear-gradient(180deg, #f7c5cc, #fce4ec)",
+    borderRadius: 2,
+    flexShrink: 0,
+  },
+  foodTimeContent: {
+    flex: 1,
+    padding: "4px 12px 12px",
+    background: "#fff8f9",
+    borderRadius: 12,
+    border: "1px solid #fce4ec",
+  },
+  foodEntryHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: 6,
+  },
+  foodEntryName: {
+    fontSize: 13,
+    fontWeight: 600,
+    color: "#5a3d42",
+    marginBottom: 4,
+  },
+  foodEntryTime: {
+    fontSize: 11,
+    color: "#b08a8e",
+  },
+  foodEntryItem: {
+    display: "flex",
+    justifyContent: "space-between",
+    fontSize: 12,
+    padding: "3px 0",
+    color: "#8a6a6e",
+  },
+  foodEntryCal: {
+    fontFamily: "'Outfit', sans-serif",
+    fontWeight: 500,
+  },
+  foodEntryTotal: {
+    fontSize: 12,
+    fontWeight: 600,
+    color: "#d4839b",
+    textAlign: "right",
+    marginTop: 6,
+    paddingTop: 6,
+    borderTop: "1px solid #fce4ec",
+  },
+  footer: {
+    textAlign: "center",
+    padding: "20px 16px",
+  },
+  resetBtn: {
+    fontSize: 12,
+    color: "#c8b0b4",
+    fontFamily: "'Noto Sans SC', sans-serif",
+    padding: "8px 16px",
+  },
+};
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(React.createElement(FitnessTracker));
+</script>
+</body>
+</html>
